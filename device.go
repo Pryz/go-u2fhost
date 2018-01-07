@@ -1,6 +1,8 @@
 package u2fhost
 
-import "github.com/marshallbrekka/go-u2fhost/hid"
+import (
+	"github.com/Pryz/go-u2fhost/hid"
+)
 
 // APDU Commands
 const (

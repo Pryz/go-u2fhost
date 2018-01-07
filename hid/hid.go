@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"io"
 
-	butil "github.com/marshallbrekka/go-u2fhost/bytes"
-	"github.com/marshallbrekka/go.hid"
+	butil "github.com/Pryz/go-u2fhost/bytes"
+	"github.com/karalabe/hid"
 )
 
 // The HID message structure is defined at the following url.
@@ -30,7 +30,7 @@ type BaseDevice interface {
 	Open() error
 	Close()
 	Write([]byte) (int, error)
-	ReadTimeout([]byte, int) (int, error)
+	Read([]byte) (int, error)
 }
 
 type Device interface {
@@ -42,14 +42,16 @@ type Device interface {
 // Returns an array of available HID devices.
 func Devices() []*HidDevice {
 	u2fDevices := []*HidDevice{}
-	devices, _ := hid.Enumerate(0x0, 0x0)
+	devices := hid.Enumerate(0x0, 0x0)
 	for _, device := range devices {
 		// need to add some custom code to get hid usage from linux.
 		// use the firefox u2f extension codebase as a reference.
 		// https://github.com/prefiks/u2f4moz/blob/master/c_src/libu2f-host/devs.c#L117-L142
-		if device.UsagePage == 0xf1d0 && device.Usage == 1 {
-			u2fDevices = append(u2fDevices, newHidDevice(newRawHidDevice(device)))
+		//if device.UsagePage == 0xf1d0 && device.Usage == 1 {
+		if device.Manufacturer == "Yubico" {
+			u2fDevices = append(u2fDevices, newHidDevice(newRawHidDevice(&device)))
 		}
+		//}
 	}
 	return u2fDevices
 }
@@ -166,7 +168,7 @@ func readResponse(dev BaseDevice, channelId uint32, command uint8) ([]byte, erro
 	header := butil.Concat(int32bytes(channelId), []byte{TYPE_INIT | command})
 	response := make([]byte, HID_RPT_SIZE)
 	for !bytes.Equal(header, response[:5]) {
-		_, err := dev.ReadTimeout(response, 2000)
+		_, err := dev.Read(response)
 		if err != nil {
 			return nil, err
 		}
@@ -181,7 +183,7 @@ func readResponse(dev BaseDevice, channelId uint32, command uint8) ([]byte, erro
 	var sequence uint8 = 0
 	for totalRead < dataLength {
 		response = make([]byte, HID_RPT_SIZE)
-		_, err := dev.ReadTimeout(response, 2000)
+		_, err := dev.Read(response)
 		if err != nil {
 			return nil, err
 		}

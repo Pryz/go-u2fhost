@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	butil "github.com/marshallbrekka/go-u2fhost/bytes"
+	butil "github.com/Pryz/go-u2fhost/bytes"
 )
 
 func TestOpen(t *testing.T) {
@@ -245,7 +245,7 @@ func (dev *testWrapperDevice) Write(data []byte) (int, error) {
 	return len(data), nil
 }
 
-func (dev *testWrapperDevice) ReadTimeout(result []byte, timeout int) (int, error) {
+func (dev *testWrapperDevice) Read(result []byte) (int, error) {
 	if dev.readError != nil {
 		return 0, dev.readError
 	}

@@ -1,7 +1,7 @@
 package hid
 
 import (
-	"github.com/marshallbrekka/go.hid"
+	"github.com/karalabe/hid"
 )
 
 type RawHidDevice struct {
@@ -16,12 +16,11 @@ func newRawHidDevice(dev *hid.DeviceInfo) *RawHidDevice {
 }
 
 func (dev *RawHidDevice) Open() error {
-	handle, err := hid.OpenPath(dev.Device.Path)
+	handle, err := dev.Device.Open()
 	if err != nil {
 		return err
 	}
 	dev.Handle = handle
-	handle.SetReadWriteNonBlocking(true)
 	return nil
 }
 
@@ -36,6 +35,10 @@ func (dev *RawHidDevice) Write(data []byte) (int, error) {
 	return dev.Handle.Write(data)
 }
 
-func (dev *RawHidDevice) ReadTimeout(response []byte, timeout int) (int, error) {
-	return dev.Handle.ReadTimeout(response, timeout)
+func (dev *RawHidDevice) Read(data []byte) (int, error) {
+	return dev.Handle.Read(data)
 }
+
+//func (dev *RawHidDevice) ReadTimeout(response []byte, timeout int) (int, error) {
+//	return dev.Handle.ReadTimeout(response, timeout)
+//}

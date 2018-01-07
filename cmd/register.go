@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	u2f "github.com/Pryz/go-u2fhost"
 	log "github.com/Sirupsen/logrus"
-	u2f "github.com/marshallbrekka/go-u2fhost"
 	"github.com/spf13/cobra"
 )
 
@@ -50,17 +50,19 @@ func registerHelper(req *u2f.RegisterRequest, devices []*u2f.HidDevice) *u2f.Reg
 	openDevices := []u2f.Device{}
 	for i, device := range devices {
 		err := device.Open()
-		if err == nil {
-			openDevices = append(openDevices, devices[i])
-			defer func(i int) {
-				devices[i].Close()
-			}(i)
-			version, err := device.Version()
-			if err != nil {
-				log.Debugf("Device version error: %s", err)
-			} else {
-				log.Debugf("Device version: %s", version)
-			}
+		if err != nil {
+			log.Debug(err)
+			continue
+		}
+		openDevices = append(openDevices, devices[i])
+		defer func(i int) {
+			devices[i].Close()
+		}(i)
+		version, err := device.Version()
+		if err != nil {
+			log.Debugf("Device version error: %s", err)
+		} else {
+			log.Debugf("Device version: %s", version)
 		}
 	}
 	if len(openDevices) == 0 {
